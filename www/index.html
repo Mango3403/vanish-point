@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Demo</title>
+    <style>
+        body {
+            margin: 0px;
+            background-color: #000000;
+            overflow: hidden;
+        }
+
+        #three,
+        #overlay {
+            position: absolute;
+            width: 1024px;
+            height: 683px
+        }
+
+        #tex {
+            display: none;
+        }
+    </style>
+    <script src="dist/three.js"></script>
+</head>
+
+<body>
+    <div id="three"></div>
+    <img id="overlay" src="media/overlay_1.png">
+    <img id="tex" src="media/floor_sample_2.png">
+
+    <script>
+        let scene, camera, renderer;
+        let spotLight;
+        let maxAnisotropy;
+
+        // overlay width and height
+        let WIDTH = 1024;
+        let HEIGHT = 683;
+
+        let three = document.getElementById('three');
+
+        let FOV = 75;
+
+        window.onload = function () {
+            init();
+            render();
+        }
+
+        // 添加地板
+        function addFloor(id, scene, magX, magY, repeatX, repeatY) {
+            /*
+             * repeat计算方式
+             * repeat = mag * (position.z/1000)
+             */
+
+            let floorTexture = new THREE.Texture(document.getElementById(id));
+            floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
+            floorTexture.anisotropy = 2;
+            floorTexture.repeat.set(repeatX, repeatY);
+            floorTexture.needsUpdate = true;
+            let floorMaterial = new THREE.MeshBasicMaterial({ map: floorTexture });
+            let floorGeometry = new THREE.PlaneBufferGeometry(1024 * magX, 1024 * magY, 10, 10);
+            let floor = new THREE.Mesh(floorGeometry, floorMaterial);
+            floor.rotation.x = - Math.PI / 2;
+            floor.rotation.z = Math.PI;
+
+            floor.position.x -= 100;
+            floor.position.z -= 7000;
+            scene.add(floor);
+        }
+
+        // 初始化
+        function init() {
+            scene = new THREE.Scene();
+            renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+
+            renderer.setClearColor(0x000000);
+            renderer.shadowMapEnabled = true;
+            renderer.shadowMapSoft = true;
+
+            // maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
+
+            addFloor('tex', scene, 5, 20, 5 * 7, 20 * 7);
+
+            setCamera(7000);
+
+            three.append(renderer.domElement);
+        }
+
+        // 设置摄像机
+        function setCamera(far) {
+            camera = new THREE.PerspectiveCamera(FOV, WIDTH / HEIGHT, .1, far);
+
+            camera.position.x = 0;
+            camera.position.y = 200;
+            camera.position.z = 512;
+
+            // 根据场景上的线计算消失点的算法
+            // 对单消失点场景有效，双消失点和多消失点未知
+            let lookTarget = new THREE.Vector3().copy(camera.position);
+            let tanScale = 2 * Math.tan(FOV / 2 * Math.PI / 180);
+            lookTarget.x += -0.010 * tanScale;
+            lookTarget.y += 0.022 * tanScale;
+            lookTarget.z += -1;
+            camera.lookAt(lookTarget);
+
+            camera.updateProjectionMatrix();
+        }
+
+        // 添加光源
+        function addLight(scene) {
+            spotLight = new THREE.SpotLight(0xffffff);
+            spotLight.castShadow = true;
+            spotLight.position.set(20, 35, 40);
+            spotLight.intensity = 2.5;
+            spotLight.distance = 373;
+            spotLight.angle = 1.6;
+            spotLight.exponent = 38;
+            spotLight.shadowCameraNear = 34;
+            spotLight.shadowCameraFar = 2635;
+            spotLight.shadowCameraFov = 68;
+            spotLight.shadowCameraVisible = false;
+            spotLight.shadowBias = 0.00;
+            spotLight.shadowDarkness = 0.11;
+            scene.add(spotLight);
+        }
+
+        function render() {
+            renderer.setSize(WIDTH, HEIGHT);
+            renderer.render(scene, camera);
+        }
+
+    </script>
+
+</body>
+
+</html>
