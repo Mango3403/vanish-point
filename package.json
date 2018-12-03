@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/Mango3403/VanishPointJS#readme",
   "dependencies": {
+    "stats.js": "^0.17.0",
     "three": "^0.98.0"
   }
 }
