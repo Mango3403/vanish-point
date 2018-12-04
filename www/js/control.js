@@ -12,7 +12,7 @@ changeScene();
 function setFloorBtn() {
     floorBtn.style.position = 'absolute';
     floorBtn.style.left = window.innerWidth / 2 + 'px';
-    floorBtn.style.top = window.innerHeight / 4 * 3 + 'px';
+    floorBtn.style.bottom = 30 + 'px';
     floorBtn.onclick = function () {
         let {
             floor,
@@ -35,8 +35,8 @@ function setFloorBtn() {
 // 设置场景更换按钮
 function setSceneBtn() {
     sceneBtn.style.position = 'fixed';
-    sceneBtn.style.right = 50 + 'px';
-    sceneBtn.style.bottom = 50 + 'px';
+    sceneBtn.style.right = 20 + 'px';
+    sceneBtn.style.bottom = 20 + 'px';
     sceneBtn.onclick = function () {
         if (getComputedStyle(sceneGrid).opacity == 0) {
             sceneGrid.style.opacity = 1;

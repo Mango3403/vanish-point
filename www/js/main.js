@@ -1,7 +1,6 @@
-let scene, camera, renderer;
-let spotLight, plane;
+let scene_back, camera_back, renderer_back;
+let light, plane;
 let maxAnisotropy;
-let drawStartPos = new THREE.Vector2();
 
 let stats;
 
@@ -24,13 +23,16 @@ let params = {
         pos_x: 0,
         pos_y: 1,
         pos_z: 0,
-        scale_x: 1,
-        scale_y: 1
+        scale_x: 2,
+        scale_y: 3.5
     }
 };
 
 // 存放所有的floor
 let floors = [];
+
+// 存放所有的plane
+let planes = [];
 
 window.onload = function () {
     init();
@@ -40,13 +42,15 @@ window.onload = function () {
 // 添加一个平面，带有CanvasTexture
 function addPlane(scene) {
     let geometry = new THREE.PlaneBufferGeometry(200, 100, 32);
-    let material = new THREE.MeshBasicMaterial({
-        color: 0xffff00,
-        side: THREE.DoubleSide
+    let material = new THREE.MeshLambertMaterial({
+        transparent: true,
+        // side: THREE.DoubleSide
     });
     plane = new THREE.Mesh(geometry, material);
 
     setupCanvasDrawing(material);
+    addText();
+    addImage();
 
     // 与yz轴平行
     // plane.rotation.x = -Math.PI / 2;
@@ -54,7 +58,8 @@ function addPlane(scene) {
     // plane.rotation.z = -Math.PI / 2;
 
     // 与xz轴平行
-    plane.rotation.x = -Math.PI / 2;
+    plane.rotation.x = Math.PI / 2;
+    plane.rotation.y = -Math.PI;
     plane.rotation.z = Math.PI;
 
     // y轴每1为一层
@@ -62,45 +67,15 @@ function addPlane(scene) {
     plane.position.y = params.plane.pos_y;
     plane.position.z = params.plane.pos_z;
 
+    // 设置比例与2D平面比例一致
+    plane.scale.x = params.plane.scale_x;
+    plane.scale.y = params.plane.scale_y;
+
+    planes.push({
+        plane: plane,
+    });
+
     scene.add(plane);
-}
-
-function setupCanvasDrawing(material) {
-    // get canvas and context
-    let drawingCanvas = document.getElementById('drawing-canvas');
-    let drawingContext = drawingCanvas.getContext('2d');
-    // draw white background
-    drawingContext.fillStyle = '#FFFFFF';
-    drawingContext.fillRect(0, 0, 128, 128);
-    // set canvas as material.map (this could be done to any map, bump, displacement etc.)
-    material.map = new THREE.CanvasTexture(drawingCanvas);
-    // set the letiable to keep track of when to draw
-    let paint = false;
-    // add canvas event listeners
-    drawingCanvas.addEventListener('mousedown', function (e) {
-        paint = true;
-        drawStartPos.set(e.offsetX, e.offsetY);
-    });
-    drawingCanvas.addEventListener('mousemove', function (e) {
-        if (paint) draw(material, drawingContext, e.offsetX, e.offsetY);
-    });
-    drawingCanvas.addEventListener('mouseup', function () {
-        paint = false;
-    });
-    drawingCanvas.addEventListener('mouseleave', function () {
-        paint = false;
-    });
-}
-
-function draw(material, drawContext, x, y) {
-    drawContext.moveTo(drawStartPos.x, drawStartPos.y);
-    drawContext.strokeStyle = '#000000';
-    drawContext.lineTo(x, y);
-    drawContext.stroke();
-    // reset drawing start position to current position.
-    drawStartPos.set(x, y);
-    // need to flag the map as needing updating.
-    material.map.needsUpdate = true;
 }
 
 // 添加地板
@@ -116,45 +91,51 @@ function addFloor(id, scene, magX, magY, repeatX, repeatY) {
     floorTexture.anisotropy = 2;
     floorTexture.repeat.set(repeatX, repeatY);
     floorTexture.needsUpdate = true;
+
     let floorMaterial = new THREE.MeshBasicMaterial({
         map: floorTexture
     });
     let floorGeometry = new THREE.PlaneBufferGeometry(1024 * magX, 1024 * magY, 10, 10);
     let floor = new THREE.Mesh(floorGeometry, floorMaterial);
+
     floor.rotation.x = -Math.PI / 2;
     floor.rotation.z = Math.PI;
 
     floor.position.x = params.left;
     floor.position.z = params.top;
+
     floors.push({
         floor: floor,
         repeatX: repeatX,
         repeatY: repeatY
     });
+
     scene.add(floor);
 }
 
 // 初始化
 function init() {
-    scene = new THREE.Scene();
-    renderer = new THREE.WebGLRenderer({
+    scene_back = new THREE.Scene();
+    renderer_back = new THREE.WebGLRenderer({
         antialias: true,
         preserveDrawingBuffer: true
     });
 
-    renderer.setClearColor(0x000000);
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.soft = true;
-    three_back.append(renderer.domElement);
+    // renderer_back.setClearColor(0x000000);
+    renderer_back.shadowMap.enabled = true;
+    renderer_back.shadowMap.soft = true;
+    three_back.append(renderer_back.domElement);
+
+    addLight(scene_back);
 
     // maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
     // repeatX: 35
     // repeatY: 140
-    addFloor('tex_floor_1', scene, 5, 20, params.repeat_x, params.repeat_y);
+    addFloor('tex_floor_1', scene_back, 5, 20, params.repeat_x, params.repeat_y);
 
-    addPlane(scene);
+    addPlane(scene_back);
 
-    setCamera(params.far);
+    setBackCamera(params.far);
 
     // 
 
@@ -163,6 +144,14 @@ function init() {
 
     // 
 
+    addGui();
+
+    // 
+
+    window.addEventListener('resize', onWindowResize, false);
+}
+
+function addGui() {
     let gui = new dat.GUI();
 
     let f2 = gui.addFolder('floor');
@@ -209,71 +198,56 @@ function init() {
     });
     f4.add(params.plane, 'scale_x', 0.1, 10).onChange(function (value) {
         plane.scale.x = value;
-    });
+    }).listen();
     f4.add(params.plane, 'scale_y', 0.1, 10).onChange(function (value) {
         plane.scale.y = value;
-    });
+    }).listen();
 
     gui.open();
-
-    // 
-
-    window.addEventListener('resize', onWindowResize, false);
 }
 
 // 设置摄像机
-function setCamera(far) {
-    camera = new THREE.PerspectiveCamera(FOV, WIDTH / HEIGHT, .1, far);
+function setBackCamera(far) {
+    camera_back = new THREE.PerspectiveCamera(FOV, WIDTH / HEIGHT, .1, far);
 
-    camera.position.x = 0;
-    camera.position.y = 200;
-    camera.position.z = 512;
+    camera_back.position.x = 0;
+    camera_back.position.y = 200;
+    camera_back.position.z = 512;
 
     // 根据场景上的线计算消失点的算法
     // 对单消失点场景有效，双消失点和多消失点未知
-    let lookTarget = new THREE.Vector3().copy(camera.position);
+    let lookTarget = new THREE.Vector3().copy(camera_back.position);
     let tanScale = 2 * Math.tan(FOV / 2 * Math.PI / 180);
+
+    // 0.010和0.022根据消失点位置得出
     lookTarget.x += -0.010 * tanScale;
     lookTarget.y += 0.022 * tanScale;
     lookTarget.z += -1;
-    camera.lookAt(lookTarget);
+    camera_back.lookAt(lookTarget);
 
-    camera.updateProjectionMatrix();
+    camera_back.updateProjectionMatrix();
 }
 
 // 添加光源
 function addLight(scene) {
-    spotLight = new THREE.SpotLight(0xffffff);
-    spotLight.castShadow = true;
-    spotLight.position.set(20, 35, 40);
-    spotLight.intensity = 2.5;
-    spotLight.distance = 373;
-    spotLight.angle = 1.6;
-    spotLight.exponent = 38;
-    spotLight.shadowCameraNear = 34;
-    spotLight.shadowCameraFar = 2635;
-    spotLight.shadowCameraFov = 68;
-    spotLight.shadowCameraVisible = false;
-    spotLight.shadowBias = 0.00;
-    spotLight.shadowDarkness = 0.11;
-    scene.add(spotLight);
+    light = new THREE.AmbientLight(0xffffff);
+    scene.add(light);
 }
 
 function onWindowResize() {
     let WINDOW_WIDTH = window.innerWidth;
     let WINDOW_HEIGHT = window.innerHeight;
-    let x = window.innerWidth / WIDTH;
 
-    camera.aspect = WINDOW_WIDTH / WINDOW_HEIGHT;
-    camera.updateProjectionMatrix();
-    renderer.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+    camera_back.aspect = WINDOW_WIDTH / WINDOW_HEIGHT;
+    camera_back.updateProjectionMatrix();
+    renderer_back.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 }
 
 function render() {
     onWindowResize();
     params.window_width = window.innerWidth;
     params.window_height = window.innerHeight;
-    renderer.render(scene, camera);
+    renderer_back.render(scene_back, camera_back);
 }
 
 function animate() {
