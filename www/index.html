@@ -5,318 +5,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Demo</title>
+    <title>Vanishing Point</title>
     <link rel="stylesheet" href="dist/material.min.css">
     <script src="dist/material.min.js"></script>
     <link rel="stylesheet" href="https://fonts.cat.net/icon?family=Material+Icons">
-    <style>
-        body {
-            margin: 0px;
-            background-color: #000000;
-            overflow: hidden;
-        }
-
-        #three,
-        #overlay {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-        }
-
-        #tex_floor_1 {
-            display: none;
-        }
-    </style>
+    <link rel="stylesheet" href="css/style.css">
     <script src="dist/three.js"></script>
     <script src="dist/stats.min.js"></script>
     <script src="dist/dat.gui.min.js"></script>
 </head>
 
 <body>
-    <div id="three"></div>
+    <div id="three_back"></div>
     <img id="overlay" src="media/overlay_1.png">
+    <div id="three_over"></div>
+
+    <canvas id="drawing-canvas" height="128" width="128"></canvas>
+
     <img id="tex_floor_1" src="media/floor_sample_2.png">
 
     <button id="floor_1" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
         <i class="material-icons">format_paint</i>
     </button>
 
-    <div class="mdl-grid">
-        <div class="mdl-cell mdl-cell--1-col">1</div>
-        <div class="mdl-cell mdl-cell--1-col">1</div>
-        <div class="mdl-cell mdl-cell--1-col">1</div>
+    <button id="scene_btn" class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored">
+        <i class="material-icons">add</i>
+    </button>
+    <div id="scene_grid" class="mdl-grid">
+        <div class="mdl-cell">
+            <img src="media/overlay_1.png" alt="overlay_1.png">
+        </div>
+        <div class="mdl-cell">
+            <img src="media/overlay_2.jpg" alt="overlay_2.jpg">
+        </div>
+        <div class="mdl-cell">
+            <img src="media/overlay_3.jpg" alt="overlay_3.jpg">
+        </div>
     </div>
 
-    <script>
-        let scene, camera, renderer;
-        let spotLight, plane;
-        let maxAnisotropy;
-
-        let stats;
-
-        let WIDTH = window.innerWidth;
-        let HEIGHT = window.innerHeight;
-
-        let three = document.getElementById('three');
-
-        let FOV = 75;
-
-        let params = {
-            window_width: window.innerWidth,
-            window_height: window.innerHeight,
-            repeat_x: 35,
-            repeat_y: 140,
-            left: -100,
-            top: -7000,
-            far: 7000,
-            plane: {
-                x: 0,
-                y: 1,
-                z: 0
-            }
-        };
-
-        // 存放所有的floor
-        let floors = [];
-
-        window.onload = function () {
-            init();
-            animate();
-        }
-
-        function addPlane(scene) {
-            let geometry = new THREE.PlaneBufferGeometry(200, 100, 32);
-            let material = new THREE.MeshBasicMaterial({
-                color: 0xffff00,
-                side: THREE.DoubleSide
-            });
-            plane = new THREE.Mesh(geometry, material);
-
-            // 与yz轴平行
-            // plane.rotation.x = -Math.PI / 2;
-            // plane.rotation.y = -Math.PI / 2;
-            // plane.rotation.z = -Math.PI / 2;
-
-            // 与xz轴平行
-            plane.rotation.x = -Math.PI / 2;
-            plane.rotation.z = Math.PI;
-
-            // y轴每1为一层
-            plane.position.x = params.plane.x;
-            plane.position.y = params.plane.y;
-            plane.position.z = params.plane.z;
-
-            scene.add(plane);
-        }
-
-        // 添加地板
-        function addFloor(id, scene, magX, magY, repeatX, repeatY) {
-            /*
-             * repeat计算方式
-             * repeat = mag * (position.z/1000)
-             * mag代表倍数
-             */
-
-            let floorTexture = new THREE.Texture(document.getElementById(id));
-            floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
-            floorTexture.anisotropy = 2;
-            floorTexture.repeat.set(repeatX, repeatY);
-            floorTexture.needsUpdate = true;
-            let floorMaterial = new THREE.MeshBasicMaterial({
-                map: floorTexture
-            });
-            let floorGeometry = new THREE.PlaneBufferGeometry(1024 * magX, 1024 * magY, 10, 10);
-            let floor = new THREE.Mesh(floorGeometry, floorMaterial);
-            floor.rotation.x = -Math.PI / 2;
-            floor.rotation.z = Math.PI;
-
-            floor.position.x = params.left;
-            floor.position.z = params.top;
-            floors.push({
-                floor: floor,
-                repeatX: repeatX,
-                repeatY: repeatY
-            });
-            scene.add(floor);
-        }
-
-        // 初始化
-        function init() {
-            scene = new THREE.Scene();
-            renderer = new THREE.WebGLRenderer({
-                antialias: true,
-                preserveDrawingBuffer: true
-            });
-
-            renderer.setClearColor(0x000000);
-            renderer.shadowMap.enabled = true;
-            renderer.shadowMap.soft = true;
-            three.append(renderer.domElement);
-
-            // maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
-            // repeatX: 35
-            // repeatY: 140
-            addFloor('tex_floor_1', scene, 5, 20, params.repeat_x, params.repeat_y);
-
-            addPlane(scene);
-
-            setCamera(params.far);
-
-            // 
-
-            stats = new Stats();
-            document.body.appendChild(stats.dom);
-
-            // 
-
-            let gui = new dat.GUI();
-            let f1 = gui.addFolder('window');
-            gui.add(params, 'window_width').listen();
-            gui.add(params, 'window_height').listen();
-
-            let f2 = gui.addFolder('floor');
-            f2.add(params, 'repeat_x', 1, 200).onChange(function (value) {
-                let {
-                    floor,
-                    repeatX
-                } = floors[0];
-                repeatX = value;
-                floor.material.map.repeat.setX(value);
-                floor.material.needsUpdate = true;
-            });
-            f2.add(params, 'repeat_y', 1, 200).onChange(function (value) {
-                let {
-                    floor,
-                    repeatY
-                } = floors[0];
-                repeatX = value;
-                floor.material.map.repeat.setY(value);
-                floor.material.needsUpdate = true;
-            });
-            f2.add(params, 'left', -10000, 10000).onChange(function (value) {
-                let {
-                    floor
-                } = floors[0];
-                floor.position.x = value;
-            });
-            f2.add(params, 'top', -10000, 10000).onChange(function (value) {
-                let {
-                    floor
-                } = floors[0];
-                floor.position.z = value;
-            });
-
-            let f3 = gui.addFolder('camera');
-            f3.add(params, 'far');
-
-            let f4 = gui.addFolder('plane');
-            f4.add(params.plane, 'x', -1000, 1000).onChange(function (value) {
-                plane.position.x = value;
-            });
-            f4.add(params.plane, 'y', 1, 100).onChange(function (value) {
-                plane.position.y = value;
-            });
-            f4.add(params.plane, 'z', -3000, 1000).onChange(function (value) {
-                plane.position.z = value;
-            });
-
-            gui.open();
-
-            // 
-
-            window.addEventListener('resize', onWindowResize, false);
-        }
-
-        // 设置摄像机
-        function setCamera(far) {
-            camera = new THREE.PerspectiveCamera(FOV, WIDTH / HEIGHT, .1, far);
-
-            camera.position.x = 0;
-            camera.position.y = 200;
-            camera.position.z = 512;
-
-            // 根据场景上的线计算消失点的算法
-            // 对单消失点场景有效，双消失点和多消失点未知
-            let lookTarget = new THREE.Vector3().copy(camera.position);
-            let tanScale = 2 * Math.tan(FOV / 2 * Math.PI / 180);
-            lookTarget.x += -0.010 * tanScale;
-            lookTarget.y += 0.022 * tanScale;
-            lookTarget.z += -1;
-            camera.lookAt(lookTarget);
-
-            camera.updateProjectionMatrix();
-        }
-
-        // 添加光源
-        function addLight(scene) {
-            spotLight = new THREE.SpotLight(0xffffff);
-            spotLight.castShadow = true;
-            spotLight.position.set(20, 35, 40);
-            spotLight.intensity = 2.5;
-            spotLight.distance = 373;
-            spotLight.angle = 1.6;
-            spotLight.exponent = 38;
-            spotLight.shadowCameraNear = 34;
-            spotLight.shadowCameraFar = 2635;
-            spotLight.shadowCameraFov = 68;
-            spotLight.shadowCameraVisible = false;
-            spotLight.shadowBias = 0.00;
-            spotLight.shadowDarkness = 0.11;
-            scene.add(spotLight);
-        }
-
-        function onWindowResize() {
-            let WINDOW_WIDTH = window.innerWidth;
-            let WINDOW_HEIGHT = window.innerHeight;
-            let x = window.innerWidth / WIDTH;
-
-            camera.aspect = WINDOW_WIDTH / WINDOW_HEIGHT;
-            camera.updateProjectionMatrix();
-            renderer.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-        }
-
-        function render() {
-            onWindowResize();
-            params.window_width = window.innerWidth;
-            params.window_height = window.innerHeight;
-            renderer.render(scene, camera);
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            render();
-            stats.update();
-        }
-    </script>
-    <script>
-        let floorFab = document.querySelector('#floor_1');
-
-        addFloorBtn();
-
-        // 添加地砖更换按钮
-        function addFloorBtn() {
-            floorFab.style.position = 'absolute';
-            floorFab.style.left = window.innerWidth / 2 + 'px';
-            floorFab.style.top = window.innerHeight / 4 * 3 + 'px';
-            floorFab.onclick = function () {
-                let {
-                    floor,
-                    repeatX,
-                    repeatY
-                } = floors[0];
-                if (/1.png/.test(floor.material.map.image.src)) {
-                    floor.material.map = new THREE.TextureLoader().load('media/floor_sample_2.png')
-                } else {
-                    floor.material.map = new THREE.TextureLoader().load('media/floor_sample_1.png')
-                }
-                floor.material.map.wrapS = floor.material.map.wrapT = THREE.RepeatWrapping;
-                floor.material.map.anisotropy = 2;
-                floor.material.needsUpdate = true;
-                floor.material.map.repeat.setX(repeatX);
-                floor.material.map.repeat.setY(repeatY);
-            }
-        }
-    </script>
+    <script src="js/main.js"></script>
+    <script src="js/control.js"></script>
 </body>
 
 </html>
