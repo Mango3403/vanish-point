@@ -3,7 +3,6 @@ import {
     addText,
     addImage
 } from './draw';
-import { login } from './login';
 
 let scene_back, camera_back, renderer_back;
 let scene_over, camera_over, renderer_over;

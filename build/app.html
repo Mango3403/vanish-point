@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Vanishing Point</title>
+    <link rel="stylesheet" href="dist/material.min.css">
+    <script src="dist/material.min.js"></script>
+    <link rel="stylesheet" href="https://fonts.cat.net/icon?family=Material+Icons">
+
+    <link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css">
+    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+
+    <link rel="stylesheet" href="css/style.css">
+    <script src="dist/three.js"></script>
+    <script src="dist/stats.min.js"></script>
+    <script src="dist/dat.gui.min.js"></script>
+    <script src="dist/fabric.min.js"></script>
+</head>
+
+<body>
+    <div id="three_back"></div>
+    <img id="overlay" src="media/overlay_1.png">
+    <div id="three_over"></div>
+    
+    <canvas id="drawing-canvas" height="128" width="128"></canvas>
+    <div id="drawing-control" class="mdl-layout mdl-js-layout mdl-layout--fixed-header
+            mdl-layout--fixed-tabs">
+        <header class="mdl-layout__header">
+            <div class="mdl-layout__tab-bar mdl-js-ripple-effect">
+                <a href="#fixed-tab-1" class="mdl-layout__tab is-active">绘图</a>
+                <a href="#fixed-tab-2" class="mdl-layout__tab">文本</a>
+                <a href="#fixed-tab-3" class="mdl-layout__tab">图片</a>
+            </div>
+        </header>
+        <main class="mdl-layout__content">
+            <section class="mdl-layout__tab-panel is-active" id="fixed-tab-1">
+                <div class="page-content">
+                    <div class="mdl-grid">
+                        <div class="mdl-cell mdl-cell--12-col">
+                            <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" onclick="setBackgroundTransparent()">
+                                设置为透明背景
+                            </button>
+                        </div>
+                        <div class="mdl-cell mdl-cell--12-col">
+                            <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" onclick="setBackgroundColor()">
+                                设置背景色
+                            </button>
+                            <button class="foo-button mdc-button mdc-button--raised mdc-ripple-upgraded">TEST</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section class="mdl-layout__tab-panel" id="fixed-tab-2">
+                <div class="page-content">
+                    <div class="mdl-grid">
+                        <!-- <div class="mdl-cell mdl-cell--12-col">
+                            <div class="mdl-textfield mdl-js-textfield">
+                                <input class="mdl-textfield__input" type="text" id="drawing-text-input">
+                                <label class="mdl-textfield__label" for="drawing-text">我想说...</label>
+                            </div>
+                        </div> -->
+                        <div class="mdl-cell mdl-cell--6-col">
+                            <button id="drawing-text-btn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+                                添加文本
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section class="mdl-layout__tab-panel" id="fixed-tab-3">
+                <div class="page-content">
+                    <div class="mdl-grid">
+                        <div class="mdl-cell mdl-cell--6-col">
+                            <button id="drawing-image-btn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+                                添加图片
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <img id="tex_floor_1" src="media/floor_sample_1.png">
+
+    <button id="floor_1" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+        <i class="material-icons">format_paint</i>
+    </button>
+
+    <button id="scene_btn" class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored">
+        <i class="material-icons">image</i>
+    </button>
+    <div id="scene_grid" class="mdl-grid">
+        <div class="mdl-cell">
+            <img src="media/overlay_1.png" alt="overlay_1.png">
+        </div>
+        <div class="mdl-cell">
+            <img src="media/overlay_2.jpg" alt="overlay_2.jpg">
+        </div>
+        <div class="mdl-cell">
+            <img src="media/overlay_3.jpg" alt="overlay_3.jpg">
+        </div>
+    </div>
+<script type="text/javascript" src="js/index.js"></script></body>
+
+</html>

@@ -50,12 +50,14 @@ module.exports = {
     },
     plugins: [
         new HtmlWebpackPlugin({
-            chunks: ['main', 'draw', 'control', 'index'],
-            template: './src/index.html',
+            chunks: ['index'],
+            template: './src/app.html',
+            filename: './app.html'
         }),
         new HtmlWebpackPlugin({
             chunks: ['login'],
-            template: './src/login.html',
+            template: './src/index.html',
+            filename: './index.html'
         })
     ]
 };

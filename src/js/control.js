@@ -7,10 +7,6 @@ let overlay = document.querySelector('#overlay');
 
 let test_btn = document.querySelector('.foo-button');
 
-// setFloorBtn();
-// setSceneBtn();
-// changeScene();
-
 /**
  * 设置地砖更换按钮
  */
