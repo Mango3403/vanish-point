@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Login</title>
+    <style>
+        html,
+        body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        #login-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #login {
+            width: 200px;
+            height: 150px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="login-container">
+        <div id="login">
+            <label for="">用户名: </label>
+            <input type="text" id="account" autocomplete="off" />
+            <br>
+            <label for="">密 码: </label>
+            <input type="password" id="password" autocomplete="off" />
+            <br>
+            <button id="login-btn">登录</button>
+        </div>
+    </div>
+<script type="text/javascript" src="js/login.js"></script></body>
+
+</html>

@@ -1,0 +1,82 @@
+body {
+  margin: 0px;
+  background-color: #000000;
+  overflow: hidden;
+}
+
+#three_back,
+#overlay,
+#three_over {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+#three_back {
+  z-index: -2;
+}
+
+#pverlay {
+  z-index: -1;
+}
+
+#three_over {
+  z-index: 0;
+}
+
+#tex_floor_1 {
+  display: none;
+}
+
+#drawing-canvas {
+  position: absolute;
+  background-color: #000000;
+  bottom: 0px;
+  left: 0px;
+  z-index: 3000;
+}
+
+.canvas-container {
+  position: absolute !important;
+  background-color: #000000;
+  bottom: 0px;
+  left: 0px;
+  z-index: 3000;
+  cursor: crosshair;
+}
+
+#drawing-control:hover {
+  bottom: 0px;
+}
+
+#drawing-control {
+  box-sizing: border-box;
+  background: #FFFFFF;
+  position: absolute;
+  height: 256px;
+  width: 256px;
+  bottom: -236px;
+  left: 128px;
+  transition: all 300ms ease 150ms;
+}
+
+#scene_grid {
+  display: none;
+}
+
+.mdl-cell {
+  box-sizing: border-box;
+  height: 200px;
+  z-index: 1;
+}
+
+.mdl-grid:first-of-type .mdl-cell {
+  height: 50px;
+}
+
+.mdl-cell img {
+  border: 1px solid black;
+  height: 100%;
+  cursor: pointer;
+  background-color: #777777;
+}

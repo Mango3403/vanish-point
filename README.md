@@ -1,6 +1,11 @@
 # VanishPointJS
 vanishing point in javascript
 
+## 框架
+1. UI框架: [material design lite](https://getmdl.io)(由于官方不再更新，将被替换), [material design component](https://material.io)
+2. js工具: [threejs](https://threejs.org), [fabric.js](http://fabricjs.com), stats.js, dat.gui.js
+3. 打包工具: webpack
+
 ## 问题
 1. ```camera.position.z = 512;```这个数字是怎么得到的？
 2. ```needsUpdate```是干什么用的？
